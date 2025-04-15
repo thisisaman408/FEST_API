@@ -14,8 +14,10 @@
     "qr-image": "^3.2.0",
     "qrcode": "^1.5.3"
   },
-  "scripts": {
-  "start": "node index.js"
+ "scripts": {
+  "build": "npm install",
+  "start": "node api/index.js"
 }
+
 
 }
