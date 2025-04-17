@@ -14,7 +14,7 @@
     "qrcode": "^1.5.3"
   },
   "scripts": {
-    "build": "npm install",
+    "build": "npm install && sudo apt-get install -y ncurses-bin",
     "start": "node index.js"
   }
 }

@@ -256,17 +256,37 @@ app.delete("/tickets/:id", async (req, res) => {
 
 // POST endpoint to get AI recommendations based on the budget
 app.post("/ml/recommend", (req, res) => {
-  const { budget } = req.body;
+  const inputData = req.body;
+  console.log("Received input data:", inputData);
 
-  if (!budget || isNaN(budget) || Number(budget) <= 0) {
-    return res
-      .status(400)
-      .json({ error: "Invalid or negative budget provided" });
+  // Validate input data
+  if (!inputData || typeof inputData !== 'object') {
+    return res.status(400).json({ error: "Invalid input data. Expected a JSON object." });
   }
 
-  const pythonPath = path.join(__dirname, "ML", "venv", "bin", "python3");
+  const { budget, min_events, event_types, min_popularity } = inputData;
+  if (!budget || isNaN(budget) || Number(budget) <= 0) {
+    return res.status(400).json({ error: "Invalid or missing budget. Budget must be a positive number." });
+  }
+
+  // Optional parameter validation
+  const validatedInput = { budget: Number(budget) };
+  if (min_events && !isNaN(min_events) && Number(min_events) > 0) {
+    validatedInput.min_events = Number(min_events);
+  }
+  if (event_types && Array.isArray(event_types) && event_types.length > 0) {
+    validatedInput.event_types = event_types;
+  }
+  if (min_popularity && !isNaN(min_popularity) && Number(min_popularity) >= 0) {
+    validatedInput.min_popularity = Number(min_popularity);
+  }
+
+  const pythonPath = "python3";
   const pythonScriptPath = path.join(__dirname, "ML", "run.py");
-  const pythonProcess = spawn(pythonPath, [pythonScriptPath, budget], {
+  const jsonInput = JSON.stringify(validatedInput);
+
+  const pythonProcess = spawn(pythonPath, [pythonScriptPath, jsonInput], {
+    cwd: path.join(__dirname, "ML"), // Set working directory to api/ML/
     env: {
       ...process.env,
       PATH: process.env.PATH,
@@ -310,13 +330,29 @@ app.post("/ml/recommend", (req, res) => {
 
   pythonProcess.on("error", (err) => {
     console.error(`[Process Error]: ${err.message}`);
-    res
-      .status(500)
-      .json({ error: "Process execution error", details: err.message });
+    res.status(500).json({ error: "Process execution error", details: err.message });
   });
+});
+app.use(express.static(path.join(__dirname, "public")));
+
+//thsi one to generate and use the static files for the client side.
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 const PORT = process.env.PORT || 4000;
+
+const fs = require("fs");
+
+console.log("Checking public directory content...");
+fs.readdir(path.join(__dirname, "public"), (err, files) => {
+  if (err) {
+    console.error("Public folder error:", err);
+  } else {
+    console.log("Public folder contains:", files);
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
