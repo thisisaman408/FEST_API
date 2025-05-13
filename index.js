@@ -7,7 +7,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const { spawn } = require("child_process");
-const multer = require("multer");
+const multer = require("multer");    
 const path = require("path");
 const Ticket = require("./models/Ticket");
 
@@ -18,7 +18,21 @@ const jwtSecret = process.env.JWT_SECRET || "bsbsfbrnsftentwnnwnwn";
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ credentials: true, origin: true })); // Allow client origin
+const allowedOrigins = [
+  "http://localhost:5174",
+  "http://localhost:5173",
+  "https://fest-front-t5ix.vercel.app" 
+]
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+})); 
 
 if (!process.env.MONGO_URL) {
   console.error("Error: MONGO_URL is not defined");
