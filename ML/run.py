@@ -165,7 +165,11 @@ def get_event_explanation_groq(event_name, event_type):
         )
         return completion.choices[0].message.content.strip().replace('"', '')
     except APIError as e:
+        print(f"Groq API Error caught for {event_name}: Status {e.status_code}, Body: {e.body}", file=sys.stderr) # Add this detailed log
         return f"Description generation failed (API Error: {e.status_code})."
+    except Exception as e:
+        print(f"Unexpected error during Groq API call for {event_name}: {e}", file=sys.stderr)
+        return f"Description generation failed (Unexpected Error)."
 
 # Main event selection logic
 def select_events(input_params):
