@@ -21,9 +21,9 @@ app.use(cookieParser());
 const allowedOrigins = [
   "http://localhost:5174",
   "http://localhost:5173",
-  "https://fest-front-t5ix.vercel.app" 
+  "https://fest-front-t5ix.vercel.app"
 ]
-app.use(cors({
+app.use(cors({ 
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
@@ -96,6 +96,7 @@ app.post("/login", async (req, res) => {
 });
 
 app.get("/profile", (req, res) => {
+  console.log("Received GET request for /profile");
   const { token } = req.cookies;
   if (token) {
     jwt.verify(token, jwtSecret, {}, async (err, userData) => {
@@ -133,6 +134,7 @@ const eventSchema = new mongoose.Schema({
 const Event = mongoose.model("Event", eventSchema);
 
 app.post("/createEvent", upload.single("image"), async (req, res) => {
+  console.log("Received GET request for /createEvent post"); 
   try {
     const eventData = req.body;
     eventData.image = req.file ? req.file.path : "";
@@ -145,6 +147,7 @@ app.post("/createEvent", upload.single("image"), async (req, res) => {
 });
 
 app.get("/createEvent", async (req, res) => {
+   console.log("Received GET request for /createEvent get"); 
   try {
     const events = await Event.find();
     res.status(200).json(events);
@@ -183,6 +186,7 @@ app.post("/event/:eventId", (req, res) => {
 });
 
 app.get("/events", (req, res) => {
+  console.log("Received GET request for /events"); 
   Event.find()
     .then((events) => {
       res.json(events);
